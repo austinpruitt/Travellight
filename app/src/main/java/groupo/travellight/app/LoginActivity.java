@@ -31,8 +31,11 @@ import groupo.travellight.db.DBUser;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements View.OnClickListener, ConnectionCallbacks,
+        OnConnectionFailedListener {
 
+    private PlusClient mPlusClient;
+    private ConnectionResult mConnectionResult;
     DBUser db = new DBUser(this);
 
 
@@ -61,6 +64,10 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mPlusClient = new PlusClient.Builder(this,this,this)
+                .build();
+
+        findViewById(R.id.sign_in_button).setOnClickListener(this);
         setContentView(R.layout.activity_login);
         try {
             String destPath = "/data/data/" + getPackageName() + "/databases/TravelLight";
@@ -99,9 +106,47 @@ public class LoginActivity extends Activity {
         findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                if(view.getId() == R.id.sign_in_button && !mPlusClient.isConnected() && mConnectionResult!= null){
+                    try{
+                        mConnectionResult.startResolutionForResult(this, REQUEST_CODE_RESOLVE_ERR);
+                        }
+                    catch(SendIntentException e){
+                        mConnectionResult = null;
+                        mPlusClient.connect();
+
+                    }
+                }
                 attemptLogin();
             }
-        });
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int responseCode, Intent intent){
+        if(requestCode == REQUEST_CODE_RESOLVE_ERR && responseCode == RESULT_OK){
+            mConnectionResult = null;
+            mPlusClient.connect();
+        }
+    }
+
+    protected void onStart(){
+        super.onStart();
+        mPlusClient.connect();
+    }
+
+    protected void onStop(){
+        super.onStop();
+        mPlusClient.disconnect();
+    }
+
+    public void onConnected(){
+        Person user = mPlusClient.getCurrentPerson();
+        user.getID();
+        user.getImage();
+    }
+
+    public void onConnectionFailed(ConnectionResult result){
+        mConnectionResult = result;
     }
 
     public void CopyDB(InputStream inputStream, OutputStream outputStream)

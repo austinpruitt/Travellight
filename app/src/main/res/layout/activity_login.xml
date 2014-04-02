@@ -74,12 +74,12 @@
                 android:text="Or"
                 android:id="@+id/textView" />
 
-            <Button
+            <com.google.android.gms.common.SignInButton
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="177dp"
                 android:layout_height="match_parent"
                 android:text="Sign in with Google"
-                android:id="@+id/sign_in_google"
+                android:id="@+id/sign_in_button"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:layout_gravity="right"/>
